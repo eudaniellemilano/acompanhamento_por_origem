@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mergulho por Canal & DRE Projetado — Junho 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e14; --panel:#161923; --panel-2:#1d212c; --border:#2a2e3a;
+    --text:#eceef2; --text-secondary:#9aa0b4; --text-muted:#666b7d;
+    --purple:#7c6fee; --blue:#3b82f6; --teal:#22c58b; --gold:#eab308;
+    --violet:#8b5cf6; --pink:#ec4899; --danger:#ef4444; --danger-bg:rgba(239,68,68,0.10);
+    --accent-bg:rgba(124,111,238,0.12);
+    --c-crm:#3b82f6; --c-pago:#22c58b; --c-vip:#eab308; --c-afiliado:#8b5cf6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 32px 64px;}
+  .crumb{font-size:12.5px; color:var(--text-muted); margin:0 0 6px;}
+  .crumb span{color:var(--text-secondary);}
+  .titlebar{margin-bottom:20px;}
+  h1{font-size:22px; font-weight:600; margin:0; display:flex; align-items:center; gap:8px;}
+  h1 .dot{width:9px; height:9px; border-radius:50%; background:var(--purple); box-shadow:0 0 0 4px var(--accent-bg);}
+  .subtitle{font-size:13.5px; color:var(--text-secondary); margin:5px 0 0;}
+  .tabs{display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:26px; padding-bottom:12px;}
+  .tab{font-family:inherit; font-size:13.5px; font-weight:500; color:var(--text-secondary); background:transparent; border:none; padding:8px 14px; border-radius:8px; cursor:pointer; transition:background .15s, color .15s;}
+  .tab:hover{background:var(--panel-2); color:var(--text);}
+  .tab.active{background:var(--panel-2); color:var(--text);}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+  .section-title{font-size:14.5px; font-weight:600; margin:0 0 12px;}
+  .section-sub{font-size:12.5px; color:var(--text-muted); margin:-8px 0 12px;}
+
+  .donut-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:22px;}
+  .donut-box{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px;}
+  .donut-box p.title{font-size:12.5px; font-weight:500; color:var(--text-secondary); margin:0 0 8px; text-align:center;}
+  .donut-box .total{text-align:center; font-size:12px; color:var(--text-muted); margin-top:6px;}
+
+  .callout{border-radius:12px; padding:16px 18px; margin-bottom:24px; border:1px solid;}
+  .callout.danger{background:var(--danger-bg); border-color:rgba(239,68,68,0.3);}
+  .callout.accent{background:var(--accent-bg); border-color:rgba(124,111,238,0.3);}
+  .callout .title{font-size:13px; font-weight:600; margin:0 0 8px;}
+  .callout p{font-size:13px; margin:0 0 4px; line-height:1.6;}
+  .callout.danger, .callout.danger .title{color:#fca5a5;}
+  .callout.accent, .callout.accent .title{color:#c4b8ff;}
+
+  .channel-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-bottom:26px;}
+  .channel-card{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .channel-card .head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .channel-card .head .name{font-size:14.5px; font-weight:600; display:flex; align-items:center; gap:8px;}
+  .channel-card .head .swatch{width:10px; height:10px; border-radius:3px;}
+  .channel-card .tag{font-size:11px; padding:3px 9px; border-radius:20px; font-weight:500;}
+  .tag.good{background:rgba(34,197,139,0.15); color:#5eead4;}
+  .tag.warn{background:rgba(234,179,8,0.15); color:#fde68a;}
+  .tag.bad{background:rgba(239,68,68,0.15); color:#fca5a5;}
+  .metric-row{display:flex; justify-content:space-between; font-size:13px; padding:5px 0; color:var(--text-secondary); border-bottom:1px solid var(--border);}
+  .metric-row:last-child{border-bottom:none;}
+  .metric-row .v{color:var(--text); font-weight:500;}
+
+  .chart-box{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:22px;}
+  canvas{max-width:100%;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px; margin-bottom:24px;}
+  th{text-align:left; font-weight:500; color:var(--text-muted); font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; padding:8px 10px; border-bottom:1px solid var(--border);}
+  td{padding:9px 10px; border-bottom:1px solid var(--border);}
+  th.c, td.c{text-align:center;}
+  tr:last-child td{border-bottom:none;}
+
+  .cmp-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;}
+  .cmp-card{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px;}
+  .cmp-card.dashed{border-style:dashed;}
+  .cmp-card .kicker{font-size:10.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--text-muted); margin:0 0 10px;}
+  .cmp-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px; color:var(--text-secondary);}
+  .cmp-row .num{color:var(--text); font-weight:600; font-size:14px;}
+  .cmp-row.big .num{font-size:18px;}
+  .est{color:var(--text-muted); font-size:11px; font-weight:400;}
+
+  .next-steps{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .next-steps .title{font-size:13px; font-weight:600; margin:0 0 10px; color:var(--purple);}
+  .next-steps p{font-size:13px; color:var(--text-secondary); margin:0 0 6px; line-height:1.6;}
+
+  @media (max-width:900px){
+    .donut-grid{grid-template-columns:repeat(2,1fr);}
+    .channel-grid, .cmp-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="crumb">Financeiro / Growth / <span>Atribuição de Resultado — Junho 2026</span></p>
+  <div class="titlebar">
+    <h1><span class="dot"></span>Mergulho por Canal &amp; DRE Projetado</h1>
+    <p class="subtitle">Detalhamento de turnover, investimento, depósito e resultado por canal — CRM · Tráfego Pago · VIP · Afiliado</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="canal">Mergulho por Canal</button>
+    <button class="tab" data-tab="dre">DRE Projetado</button>
+  </div>
+
+  <!-- ===================== MERGULHO POR CANAL ===================== -->
+  <div class="panel active" id="tab-canal">
+
+    <p class="section-title">Participação de cada canal no total da empresa</p>
+    <p class="section-sub">Quanto do turnover, investimento, depósito e NGR está concentrado em cada canal.</p>
+    <div class="donut-grid">
+      <div class="donut-box"><p class="title">Turnover</p><canvas id="dTurnover" height="160"></canvas><p class="total">Total: R$ 96.0M</p></div>
+      <div class="donut-box"><p class="title">Investimento</p><canvas id="dInvest" height="160"></canvas><p class="total">Total: R$ 0.75M</p></div>
+      <div class="donut-box"><p class="title">Depósito</p><canvas id="dDeposito" height="160"></canvas><p class="total">Total: R$ 18.4M</p></div>
+      <div class="donut-box"><p class="title">NGR</p><canvas id="dNgr" height="160"></canvas><p class="total">Total: R$ 4.82M</p></div>
+    </div>
+
+    <div class="callout danger">
+      <p class="title">⚠ Desproporção em Tráfego Pago</p>
+      <p>Pago representa <strong>43.8%</strong> do turnover da empresa, mas consome <strong>53.3%</strong> de todo o investimento — a maior desproporção entre participação de volume e participação de custo dos 4 canais.</p>
+      <p>CRM é o oposto: <strong>34%</strong> do NGR gerado com apenas <strong>9.3%</strong> do investimento total.</p>
+    </div>
+
+    <p class="section-title">Detalhamento por canal</p>
+    <div class="channel-grid">
+
+      <div class="channel-card">
+        <div class="head"><span class="name"><span class="swatch" style="background:var(--c-crm)"></span>CRM</span><span class="tag good">alta eficiência</span></div>
+        <div class="metric-row"><span>Turnover</span><span class="v">R$ 8.20M <span style="color:var(--text-muted)">(8.5%)</span></span></div>
+        <div class="metric-row"><span>GGR</span><span class="v">R$ 2.84M</span></div>
+        <div class="metric-row"><span>NGR</span><span class="v">R$ 1.64M <span style="color:var(--text-muted)">(34%)</span></span></div>
+        <div class="metric-row"><span>Investimento</span><span class="v">R$ 0.07M <span style="color:var(--text-muted)">(9.3%)</span></span></div>
+        <div class="metric-row"><span>Líquido real</span><span class="v">R$ 1.57M</span></div>
+        <div class="metric-row"><span>Depósito</span><span class="v">R$ 5.50M <span style="color:var(--text-muted)">(29.9%)</span></span></div>
+        <div class="metric-row"><span>Saque</span><span class="v">R$ 4.00M</span></div>
+        <div class="metric-row"><span>ARPU</span><span class="v">R$ 39.0</span></div>
+        <div class="metric-row"><span>Custo de retenção / usuário</span><span class="v">R$ 1.67</span></div>
+      </div>
+
+      <div class="channel-card">
+        <div class="head"><span class="name"><span class="swatch" style="background:var(--c-pago)"></span>Tráfego Pago</span><span class="tag bad">eficiência caindo</span></div>
+        <div class="metric-row"><span>Turnover</span><span class="v">R$ 42.0M <span style="color:var(--text-muted)">(43.8%)</span></span></div>
+        <div class="metric-row"><span>GGR</span><span class="v">R$ 1.48M</span></div>
+        <div class="metric-row"><span>NGR</span><span class="v">R$ 1.30M <span style="color:var(--text-muted)">(27%)</span></span></div>
+        <div class="metric-row"><span>Investimento</span><span class="v">R$ 0.40M <span style="color:var(--text-muted)">(53.3%)</span></span></div>
+        <div class="metric-row"><span>Líquido real</span><span class="v">R$ 0.90M</span></div>
+        <div class="metric-row"><span>Depósito</span><span class="v">R$ 6.40M <span style="color:var(--text-muted)">(34.8%)</span></span></div>
+        <div class="metric-row"><span>Saque</span><span class="v">R$ 5.00M</span></div>
+        <div class="metric-row"><span>ARPU</span><span class="v">R$ 132.7</span></div>
+        <div class="metric-row"><span>CAC</span><span class="v">R$ 40.8</span></div>
+      </div>
+
+      <div class="channel-card">
+        <div class="head"><span class="name"><span class="swatch" style="background:var(--c-vip)"></span>VIP</span><span class="tag warn">alta concentração</span></div>
+        <div class="metric-row"><span>Turnover</span><span class="v">R$ 31.0M <span style="color:var(--text-muted)">(32.3%)</span></span></div>
+        <div class="metric-row"><span>GGR</span><span class="v">R$ 1.36M</span></div>
+        <div class="metric-row"><span>NGR</span><span class="v">R$ 1.06M <span style="color:var(--text-muted)">(22%)</span></span></div>
+        <div class="metric-row"><span>Investimento</span><span class="v">R$ 0.13M <span style="color:var(--text-muted)">(17.3%)</span></span></div>
+        <div class="metric-row"><span>Líquido real</span><span class="v">R$ 0.93M</span></div>
+        <div class="metric-row"><span>Depósito</span><span class="v">R$ 4.60M <span style="color:var(--text-muted)">(25%)</span></span></div>
+        <div class="metric-row"><span>Saque</span><span class="v">R$ 4.50M</span></div>
+        <div class="metric-row"><span>ARPU</span><span class="v">R$ 883.3</span></div>
+        <div class="metric-row"><span>Custo de retenção / usuário</span><span class="v">R$ 108.3</span></div>
+      </div>
+
+      <div class="channel-card">
+        <div class="head"><span class="name"><span class="swatch" style="background:var(--c-afiliado)"></span>Afiliado</span><span class="tag good">estável</span></div>
+        <div class="metric-row"><span>Turnover</span><span class="v">R$ 14.8M <span style="color:var(--text-muted)">(15.4%)</span></span></div>
+        <div class="metric-row"><span>GGR</span><span class="v">R$ 0.82M</span></div>
+        <div class="metric-row"><span>NGR</span><span class="v">R$ 0.82M <span style="color:var(--text-muted)">(17%)</span></span></div>
+        <div class="metric-row"><span>Investimento</span><span class="v">R$ 0.15M <span style="color:var(--text-muted)">(20%)</span></span></div>
+        <div class="metric-row"><span>Líquido real</span><span class="v">R$ 0.67M</span></div>
+        <div class="metric-row"><span>Depósito</span><span class="v">R$ 1.90M <span style="color:var(--text-muted)">(10.3%)</span></span></div>
+        <div class="metric-row"><span>Saque</span><span class="v">R$ 1.40M</span></div>
+        <div class="metric-row"><span>ARPU</span><span class="v">R$ 132.3</span></div>
+        <div class="metric-row"><span>CAC</span><span class="v">R$ 24.2</span></div>
+      </div>
+
+    </div>
+
+    <p class="section-title">NGR por canal — dia a dia</p>
+    <p class="section-sub">A partir de 15/06, tráfego pago perde força frente aos demais canais.</p>
+    <div class="chart-box"><canvas id="dailyChart" height="90"></canvas></div>
+  </div>
+
+  <!-- ===================== DRE PROJETADO ===================== -->
+  <div class="panel" id="tab-dre">
+
+    <div class="callout accent">
+      <p class="title">🧪 Ainda não é dado real — é a proposta de como ficaria</p>
+      <p>Os percentuais de diferimento abaixo são estimativas ilustrativas para validar o conceito. Antes de virar aba oficial, precisam ser confirmados com o financeiro por tipo de custo (contrato de afiliado, mídia, bônus, comps de VIP).</p>
+    </div>
+
+    <p class="section-title">Caixa vs Competência — Junho 2026</p>
+    <div class="cmp-grid">
+      <div class="cmp-card">
+        <p class="kicker">💵 Regime de Caixa (atual)</p>
+        <div class="cmp-row"><span>Investimento reconhecido</span><span class="num">R$ 0.75M</span></div>
+        <div class="cmp-row big"><span>Líquido real</span><span class="num">R$ 4.07M</span></div>
+      </div>
+      <div class="cmp-card dashed">
+        <p class="kicker">📅 Regime de Competência (estimado)</p>
+        <div class="cmp-row"><span>Investimento alocado ao mês</span><span class="num">R$ 0.82M <span class="est">(est.)</span></span></div>
+        <div class="cmp-row big"><span>Líquido real</span><span class="num" style="color:var(--purple)">R$ 4.00M <span class="est">(est.)</span></span></div>
+      </div>
+    </div>
+
+    <p class="section-title">Proposta de diferimento por tipo de custo</p>
+    <p class="section-sub">Percentuais ilustrativos — a validar com o financeiro.</p>
+    <table>
+      <tr><th>Tipo de custo</th><th class="c">Mês corrente</th><th class="c">+1 mês</th><th class="c">+2 meses</th></tr>
+      <tr><td>Comissão de afiliado</td><td class="c">40%</td><td class="c">35%</td><td class="c">25%</td></tr>
+      <tr><td>Mídia paga (tráfego)</td><td class="c">90%</td><td class="c">10%</td><td class="c">—</td></tr>
+      <tr><td>Bônus / cashback CRM</td><td class="c">100%</td><td class="c">—</td><td class="c">—</td></tr>
+      <tr><td>Comps / hosting VIP</td><td class="c">80%</td><td class="c">20%</td><td class="c">—</td></tr>
+    </table>
+
+    <p class="section-title">Líquido Real: Caixa vs Competência (estimado)</p>
+    <p class="section-sub">Sólida = regime de caixa (atual) · tracejada = regime de competência (estimado).</p>
+    <div class="chart-box"><canvas id="dreChart" height="100"></canvas></div>
+
+    <div class="next-steps">
+      <p class="title">✓ Próximos passos pra virar aba oficial</p>
+      <p>1. Validar com financeiro os percentuais reais de diferimento por tipo de contrato</p>
+      <p>2. Definir se o diferimento é fixo (regra simples) ou por contrato específico (mais preciso, mais complexo de manter)</p>
+      <p>3. Rodar em paralelo com a visão de caixa por 1-2 meses antes de substituir</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  const muted = '#666b7d';
+  const gridColor = 'rgba(255,255,255,0.06)';
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  const channelColors = ['#3b82f6','#22c58b','#eab308','#8b5cf6'];
+  const channelLabels = ['CRM','Tráfego Pago','VIP','Afiliado'];
+
+  function donut(id, data){
+    new Chart(document.getElementById(id), {
+      type: 'doughnut',
+      data: { labels: channelLabels, datasets: [{ data: data, backgroundColor: channelColors, borderColor: '#161923', borderWidth: 2 }] },
+      options: { responsive: true, cutout: '60%',
+        plugins: { legend: { position: 'bottom', labels: { color: '#9aa0b4', boxWidth: 8, font: { size: 10 }, padding: 8 } },
+          tooltip: { callbacks: { label: (ctx)=> ctx.label + ': ' + ctx.parsed + '%' } } } }
+    });
+  }
+  donut('dTurnover', [8.5, 43.8, 32.3, 15.4]);
+  donut('dInvest', [9.3, 53.3, 17.3, 20.0]);
+  donut('dDeposito', [29.9, 34.8, 25.0, 10.3]);
+  donut('dNgr', [34, 27, 22, 17]);
+
+  const days = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'].map(d=>'06/'+d);
+  const crmDaily = [45,47,49,52,54,55,58,60,62,63,66,68,70,72,74,76,78,79,81,83,85,86,88];
+  const pagoDaily = [60,61,62,63,64,65,66,66,64,62,60,58,55,52,50,47,44,42,40,38,36,35,34];
+  const vipDaily = [42,42,43,43,44,44,45,45,46,46,47,47,48,48,49,49,50,50,51,51,52,52,53];
+  const afiliadoDaily = [30,30,31,31,31,32,32,32,33,33,33,34,34,34,35,35,35,36,36,36,37,37,37];
+
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'line',
+    data: { labels: days, datasets: [
+      { label: 'CRM', data: crmDaily, borderColor: '#3b82f6', pointRadius: 0, borderWidth: 2, tension: 0.35 },
+      { label: 'Tráfego pago', data: pagoDaily, borderColor: '#22c58b', pointRadius: 0, borderWidth: 2, tension: 0.35 },
+      { label: 'VIP', data: vipDaily, borderColor: '#eab308', pointRadius: 0, borderWidth: 2, tension: 0.35 },
+      { label: 'Afiliado', data: afiliadoDaily, borderColor: '#8b5cf6', pointRadius: 0, borderWidth: 2, tension: 0.35 }
+    ]},
+    options: { responsive: true,
+      plugins: { legend: { position: 'top', labels: { color: '#9aa0b4', boxWidth: 10, font: { size: 11 } } } },
+      scales: { y: { grid: { color: gridColor }, ticks: { color: muted, callback: (v)=>'R$ '+v+'k' } },
+        x: { grid: { display: false }, ticks: { color: muted, maxRotation: 60, minRotation: 60, font: { size: 9 } } } } }
+  });
+
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun'];
+  const liquidoCaixa = [2.80, 3.05, 3.55, 3.40, 4.30, 4.07];
+  const liquidoCompetencia = [2.95, 3.10, 3.30, 3.50, 3.75, 4.00];
+
+  new Chart(document.getElementById('dreChart'), {
+    type: 'line',
+    data: { labels: months, datasets: [
+      { label: 'Regime de caixa', data: liquidoCaixa, borderColor: '#eab308', pointRadius: 3, borderWidth: 2, tension: 0.3 },
+      { label: 'Regime de competência (estimado)', data: liquidoCompetencia, borderColor: '#7c6fee', borderDash: [5,4], pointRadius: 3, borderWidth: 2, tension: 0.3 }
+    ]},
+    options: { responsive: true,
+      plugins: { legend: { position: 'top', labels: { color: '#9aa0b4', boxWidth: 10, font: { size: 11 } } } },
+      scales: { y: { grid: { color: gridColor }, ticks: { color: muted, callback: (v)=>'R$ '+v+'M' } }, x: { grid: { display: false }, ticks: { color: muted } } } }
+  });
+</script>
+</body>
+</html>
